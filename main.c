@@ -3,8 +3,6 @@
 #include <math.h>
 #include <string.h>
 
-#define FILE_IN "input.1.txt"
-
 // A linked list (LL) node to store a queue entry
 struct QueueNode
 {
@@ -82,6 +80,7 @@ int main(int argc, char *argv[])
 
     int pageNumber = 0;
     int frameNumber = 0;
+    int numberofAccessRequests = 0;
     int accessRequest = 0;
     char str[256];
 
@@ -96,36 +95,48 @@ int main(int argc, char *argv[])
     }
 
     //read input file
-    if (fgets(str, sizeof str, input_file))
-    {
-        sscanf(str, "%d %d %d", &pageNumber, &frameNumber, &accessRequest);
+    fgets(str, sizeof str, input_file);
 
-        if (strcmp(argv[2], "FIFO") == 0)
-        {
-            struct Queue *q = createQueue();
-            printf("Queue is succesfully created");
-            enQueue(q, 20);
-            struct QueueNode *n = deQueue(q);
-            printf("item removed at front of list: %d", n->key);
-            // The first integer is the number of pages,
-            // the second integer is the number of frames, and the
-            // third integer is the number of page access requests.
-        }
-        else if (strcmp(argv[2], "LRU") == 0)
-        {
-            printf("LRU");
-        }
-        else if (strcmp(argv[2], "OPT") == 0)
-        {
-            printf("OPT");
-        }
-        else
-        {
-            printf("error");
-        }
+    if (sscanf(str, "%d %d %d\n", &pageNumber, &frameNumber, &numberofAccessRequests) == 3)
+    {
+        printf("%d %d %d\n", pageNumber, frameNumber, numberofAccessRequests);
     }
     else
     {
         printf("error reading file, text file needs to start with 3 integers");
+        exit(EXIT_FAILURE);
+    }
+
+    if (strcmp(argv[2], "FIFO") == 0)
+    {
+        struct Queue *q = createQueue();
+        printf("Queue is succesfully created");
+        while (fgets(str, sizeof str, input_file))
+        {
+            if (sscanf(str, "%d %d %d\n", &pageNumber, &frameNumber, &numberofAccessRequests) == 1)
+            {
+                sscanf(str, "%d\n", &accessRequest);
+                printf("\n%d\n", accessRequest);
+                enQueue(q, accessRequest);
+                // while (numberofAccessRequests != 0)
+                // {
+
+                //     numberofAccessRequests--;
+                // }
+            }
+        }
+    }
+
+    else if (strcmp(argv[2], "LRU") == 0)
+    {
+        printf("LRU");
+    }
+    else if (strcmp(argv[2], "OPT") == 0)
+    {
+        printf("OPT");
+    }
+    else
+    {
+        printf("error");
     }
 }
