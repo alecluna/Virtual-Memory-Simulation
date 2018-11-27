@@ -73,29 +73,59 @@ struct QueueNode *deQueue(struct Queue *q)
 
 int main(int argc, char *argv[])
 {
-    if (argc > 4) //error validate more than 4 args
+    //input validation
+    if (argc > 4)
     {
         printf("Incorrect number of arguments\n");
         return 1;
     }
 
+    int pageNumber = 0;
+    int frameNumber = 0;
+    int accessRequest = 0;
+    char str[256];
+
     FILE *input_file;
     input_file = fopen(argv[1], "r");
 
-    if (strcmp(argv[2], "FIFO") == 0)
+    //file validation
+    if (input_file == NULL)
     {
-        printf("FIFO");
+        printf("Error on opening the input file \n");
+        exit(EXIT_FAILURE);
     }
-    else if (strcmp(argv[2], "LRU") == 0)
+
+    //read input file
+    if (fgets(str, sizeof str, input_file))
     {
-        printf("LRU");
-    }
-    else if (strcmp(argv[2], "OPT") == 0)
-    {
-        printf("OPT");
+        sscanf(str, "%d %d %d", &pageNumber, &frameNumber, &accessRequest);
+
+        if (strcmp(argv[2], "FIFO") == 0)
+        {
+            struct Queue *q = createQueue();
+            printf("Queue is succesfully created");
+            enQueue(q, 20);
+            struct QueueNode *n = deQueue(q);
+            printf("item removed at front of list: %d", n->key);
+            // The first integer is the number of pages,
+            // the second integer is the number of frames, and the
+            // third integer is the number of page access requests.
+        }
+        else if (strcmp(argv[2], "LRU") == 0)
+        {
+            printf("LRU");
+        }
+        else if (strcmp(argv[2], "OPT") == 0)
+        {
+            printf("OPT");
+        }
+        else
+        {
+            printf("error");
+        }
     }
     else
     {
-        printf("error");
+        printf("error reading file, text file needs to start with 3 integers");
     }
 }
