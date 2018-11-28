@@ -143,6 +143,10 @@ int main(int argc, char *argv[])
 
     if (strcmp(argv[2], "FIFO") == 0)
     {
+
+        createQueue(&q, sizeof(int));
+        printf("Queue is succesfully created");
+
         //         1- Start traversing the pages.
         //  i) If set holds less pages than capacity.
         //    a) Insert page into the set one by one until
@@ -152,29 +156,24 @@ int main(int argc, char *argv[])
         //       queue to perform FIFO.
         //    c) Increment page fault
 
-        createQueue(&q, sizeof(int));
-        printf("Queue is succesfully created");
         //build queue
-        // while (fgets(str, sizeof str, input_file))
-        // {
+        while (fgets(str, sizeof str, input_file))
+        {
 
-        //checking if it is a single line in the text file, if its not, skip
-        // if (sscanf(str, "%d %d %d\n", &pageNumber, &frameNumber, &numberofAccessRequests) == 1)
-        // {
-        //     printf("\n# of access requests: %d\n", numberofAccessRequests);
+            //checking if it is a single line in the text file, if its not, skip
+            if (sscanf(str, "%d %d %d\n", &pageNumber, &frameNumber, &numberofAccessRequests) == 1)
+            {
+                //  i) If set holds less pages than capacity.
+                if (getQueueSize(&q) < 4)
+                {
+                    printf("\n# of access requests: %d\n", numberofAccessRequests);
 
-        //     sscanf(str, "%d", &accessRequest);
-        //     enQueue(q, accessRequest);
-        //     printf("\n%d was just enqueued.", accessRequest);
-        //     frameNumberCounter++;
-
-        //     printf("while loop exited after 4");
-        //     struct QueueNode *n = deQueue(q);
-        //     if (n != NULL)
-        //         printf("Dequeued item from list is: %d", n->data);
-        //     printf("\n");
-        //}
-        //}
+                    sscanf(str, "%d", &accessRequest);
+                    enqueue(&q, &accessRequest);
+                    printf("\n%d was just enqueued.", accessRequest);
+                }
+            }
+        }
     }
 
     else if (strcmp(argv[2], "LRU") == 0)
