@@ -1,72 +1,103 @@
+#include "Queue.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <stdbool.h>
 
-// A linked list (LL) node to store a queue entry
-struct QueueNode
+void queueInit(Queue *q, size_t memSize)
 {
-    int key;
-    struct QueueNode *next;
-};
-
-// The queue, front stores the front node of LL and rear stores ths
-// last node of LL
-struct Queue
-{
-    struct QueueNode *front, *rear;
-};
-
-// A utility function to create a new linked list node.
-struct QueueNode *newNode(int k)
-{
-    struct QueueNode *temp = (struct QueueNode *)malloc(sizeof(struct QueueNode));
-    temp->key = k;
-    temp->next = NULL;
-    return temp;
+    q->sizeOfQueue = 0;
+    q->memSize = memSize;
+    q->head = q->tail = NULL;
 }
 
-// A utility function to create an empty queue
-struct Queue *createQueue()
+int enqueue(Queue *q, const void *data)
 {
-    struct Queue *q = (struct Queue *)malloc(sizeof(struct Queue));
-    q->front = q->rear = NULL;
-    return q;
-}
+    node *newNode = (node *)malloc(sizeof(node));
 
-// The function to add a key k to q
-void enQueue(struct Queue *q, int k)
-{
-    // Create a new LL node
-    struct QueueNode *temp = newNode(k);
-
-    // If queue is empty, then new node is front and rear both
-    if (q->rear == NULL)
+    if (newNode == NULL)
     {
-        q->front = q->rear = temp;
-        return;
+        return -1;
     }
 
-    // Add the new node at the end of queue and change rear
-    q->rear->next = temp;
-    q->rear = temp;
+    newNode->data = malloc(q->memSize);
+
+    if (newNode->data == NULL)
+    {
+        free(newNode);
+        return -1;
+    }
+
+    newNode->next = NULL;
+
+    memcpy(newNode->data, data, q->memSize);
+
+    if (q->sizeOfQueue == 0)
+    {
+        q->head = q->tail = newNode;
+    }
+    else
+    {
+        q->tail->next = newNode;
+        q->tail = newNode;
+    }
+
+    q->sizeOfQueue++;
+    return 0;
 }
 
-// Function to remove a key from given queue q
-struct QueueNode *deQueue(struct Queue *q)
+void dequeue(Queue *q, void *data)
 {
-    // If queue is empty, return NULL.
-    if (q->front == NULL)
-        return NULL;
+    if (q->sizeOfQueue > 0)
+    {
+        node *temp = q->head;
+        memcpy(data, temp->data, q->memSize);
 
-    // Store previous front and move front one node ahead
-    struct QueueNode *temp = q->front;
-    q->front = q->front->next;
+        if (q->sizeOfQueue > 1)
+        {
+            q->head = q->head->next;
+        }
+        else
+        {
+            q->head = NULL;
+            q->tail = NULL;
+        }
 
-    // If front becomes NULL, then change rear also as NULL
-    if (q->front == NULL)
-        q->rear = NULL;
-    return temp;
+        q->sizeOfQueue--;
+        free(temp->data);
+        free(temp);
+    }
+}
+
+void queuePeek(Queue *q, void *data)
+{
+    if (q->sizeOfQueue > 0)
+    {
+        node *temp = q->head;
+        memcpy(data, temp->data, q->memSize);
+    }
+}
+
+void clearQueue(Queue *q)
+{
+    node *temp;
+
+    while (q->sizeOfQueue > 0)
+    {
+        temp = q->head;
+        q->head = temp->next;
+        free(temp->data);
+        free(temp);
+        q->sizeOfQueue--;
+    }
+
+    q->head = q->tail = NULL;
+}
+
+int getQueueSize(Queue *q)
+{
+    return q->sizeOfQueue;
 }
 
 int main(int argc, char *argv[])
@@ -80,6 +111,7 @@ int main(int argc, char *argv[])
 
     int pageNumber = 0;
     int frameNumber = 0;
+    int frameNumberCounter = 1;
     int numberofAccessRequests = 0;
     int accessRequest = 0;
     char str[256];
@@ -109,20 +141,35 @@ int main(int argc, char *argv[])
 
     if (strcmp(argv[2], "FIFO") == 0)
     {
+        //         1- Start traversing the pages.
+        //  i) If set holds less pages than capacity.
+        //    a) Insert page into the set one by one until
+        //       the size  of set reaches capacity or all
+        //       page requests are processed.
+        //    b) Simultaneously maintain the pages in the
+        //       queue to perform FIFO.
+        //    c) Increment page fault
         struct Queue *q = createQueue();
         printf("Queue is succesfully created");
+        //build queue
         while (fgets(str, sizeof str, input_file))
         {
+
+            //checking if it is a single line in the text file, if its not, skip
             if (sscanf(str, "%d %d %d\n", &pageNumber, &frameNumber, &numberofAccessRequests) == 1)
             {
-                sscanf(str, "%d\n", &accessRequest);
-                printf("\n%d\n", accessRequest);
-                enQueue(q, accessRequest);
-                // while (numberofAccessRequests != 0)
-                // {
+                printf("\n# of access requests: %d\n", numberofAccessRequests);
 
-                //     numberofAccessRequests--;
-                // }
+                sscanf(str, "%d", &accessRequest);
+                enQueue(q, accessRequest);
+                printf("\n%d was just enqueued.", accessRequest);
+                frameNumberCounter++;
+
+                printf("while loop exited after 4");
+                struct QueueNode *n = deQueue(q);
+                if (n != NULL)
+                    printf("Dequeued item from list is: %d", n->data);
+                printf("\n");
             }
         }
     }
