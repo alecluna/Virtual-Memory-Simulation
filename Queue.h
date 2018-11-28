@@ -10,12 +10,12 @@ typedef struct Node
 typedef struct QueueList
 {
     int sizeOfQueue;
-    size_t memSize;
+    int memSize;
     node *head;
     node *tail;
 } Queue;
 
-void queueInit(Queue *q, size_t memSize);
+void createQueue(Queue *q, int memSize);
 int enqueue(Queue *, const void *);
 void dequeue(Queue *, void *);
 void queuePeek(Queue *, void *);

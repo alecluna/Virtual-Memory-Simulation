@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-void queueInit(Queue *q, size_t memSize)
+void createQueue(Queue *q, int memSize)
 {
     q->sizeOfQueue = 0;
     q->memSize = memSize;
@@ -115,6 +115,8 @@ int main(int argc, char *argv[])
     int numberofAccessRequests = 0;
     int accessRequest = 0;
     char str[256];
+    int val;
+    Queue q;
 
     FILE *input_file;
     input_file = fopen(argv[1], "r");
@@ -149,29 +151,30 @@ int main(int argc, char *argv[])
         //    b) Simultaneously maintain the pages in the
         //       queue to perform FIFO.
         //    c) Increment page fault
-        struct Queue *q = createQueue();
+
+        createQueue(&q, sizeof(int));
         printf("Queue is succesfully created");
         //build queue
-        while (fgets(str, sizeof str, input_file))
-        {
+        // while (fgets(str, sizeof str, input_file))
+        // {
 
-            //checking if it is a single line in the text file, if its not, skip
-            if (sscanf(str, "%d %d %d\n", &pageNumber, &frameNumber, &numberofAccessRequests) == 1)
-            {
-                printf("\n# of access requests: %d\n", numberofAccessRequests);
+        //checking if it is a single line in the text file, if its not, skip
+        // if (sscanf(str, "%d %d %d\n", &pageNumber, &frameNumber, &numberofAccessRequests) == 1)
+        // {
+        //     printf("\n# of access requests: %d\n", numberofAccessRequests);
 
-                sscanf(str, "%d", &accessRequest);
-                enQueue(q, accessRequest);
-                printf("\n%d was just enqueued.", accessRequest);
-                frameNumberCounter++;
+        //     sscanf(str, "%d", &accessRequest);
+        //     enQueue(q, accessRequest);
+        //     printf("\n%d was just enqueued.", accessRequest);
+        //     frameNumberCounter++;
 
-                printf("while loop exited after 4");
-                struct QueueNode *n = deQueue(q);
-                if (n != NULL)
-                    printf("Dequeued item from list is: %d", n->data);
-                printf("\n");
-            }
-        }
+        //     printf("while loop exited after 4");
+        //     struct QueueNode *n = deQueue(q);
+        //     if (n != NULL)
+        //         printf("Dequeued item from list is: %d", n->data);
+        //     printf("\n");
+        //}
+        //}
     }
 
     else if (strcmp(argv[2], "LRU") == 0)
