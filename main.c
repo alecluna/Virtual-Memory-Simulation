@@ -95,6 +95,20 @@ void clearQueue(Queue *q)
     q->head = q->tail = NULL;
 }
 
+int searchQueue(Queue *q, int value)
+{
+    node *temp;
+    temp = q->head;
+
+    while (temp != NULL)
+    {
+        int data = (int)temp->data;
+        if (data == value)
+            return true;
+    }
+    return false;
+}
+
 int getQueueSize(Queue *q)
 {
     return q->sizeOfQueue;
@@ -114,9 +128,11 @@ int main(int argc, char *argv[])
     int frameNumberCounter = 1;
     int numberofAccessRequests = 0;
     int accessRequest = 0;
+    int pageFaultCount = 0;
     char str[256];
     int val;
-    Queue q;
+    Queue stringRequestQueue;
+    Queue pageDemandQueue;
 
     FILE *input_file;
     input_file = fopen(argv[1], "r");
@@ -141,38 +157,39 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
+    createQueue(&stringRequestQueue, sizeof(int));
+    printf("Queue is succesfully created \n");
+
+    while (fgets(str, sizeof str, input_file))
+    {
+        if (sscanf(str, "%d %d %d\n", &pageNumber, &frameNumber, &numberofAccessRequests) == 1)
+        {
+
+            sscanf(str, "%d", &accessRequest);
+            enqueue(&stringRequestQueue, &accessRequest);
+            printf("page number %d was succesfully enqueued\n", accessRequest);
+        }
+    }
+    printf("\n");
+
     if (strcmp(argv[2], "FIFO") == 0)
     {
 
-        createQueue(&q, sizeof(int));
-        printf("Queue is succesfully created");
-
-        //         1- Start traversing the pages.
-        //  i) If set holds less pages than capacity.
-        //    a) Insert page into the set one by one until
-        //       the size  of set reaches capacity or all
-        //       page requests are processed.
-        //    b) Simultaneously maintain the pages in the
-        //       queue to perform FIFO.
-        //    c) Increment page fault
-
-        //build queue
-        while (fgets(str, sizeof str, input_file))
+        if (getQueueSize(&pageDemandQueue) < 4)
         {
-
-            //checking if it is a single line in the text file, if its not, skip
-            if (sscanf(str, "%d %d %d\n", &pageNumber, &frameNumber, &numberofAccessRequests) == 1)
-            {
-                //  i) If set holds less pages than capacity.
-                if (getQueueSize(&q) < 4)
-                {
-                    printf("\n# of access requests: %d\n", numberofAccessRequests);
-
-                    sscanf(str, "%d", &accessRequest);
-                    enqueue(&q, &accessRequest);
-                    printf("\n%d was just enqueued.", accessRequest);
-                }
-            }
+            int temp = dequeue(&stringRequestQueue);
+            enqueue(&pageDemandQueue, );
+            //  i) If set holds less pages than capacity.
+            //    a) Insert page into the set one by one until
+            //       the size  of set reaches capacity or all
+            //       page requests are processed.
+            //    b) Simultaneously maintain the pages in the
+            //       queue to perform FIFO.
+            //    c) Increment page fault
+            sscanf(str, "%d", &accessRequest);
+            enqueue(&pageDemandQueue, &accessRequest);
+            pageFaultCount++;
+            printf("\n%d was just enqueued, Number of Page Faults: %d", accessRequest, pageFaultCount);
         }
     }
 

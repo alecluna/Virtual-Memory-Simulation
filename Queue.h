@@ -20,6 +20,7 @@ int enqueue(Queue *, const void *);
 void dequeue(Queue *, void *);
 void queuePeek(Queue *, void *);
 void clearQueue(Queue *);
+int searchQueue(Queue *, int value);
 int getQueueSize(Queue *);
 
 #endif /* QUEUE_H_INCLUDED */
