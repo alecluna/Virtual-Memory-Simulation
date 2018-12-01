@@ -2,11 +2,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-int pageRequestArray[20];
+int pageRequestArray[30];
 int pageNumber;
 int frameNumber;
 int numberofRequests;
+int frameIndex = 0;
+int pageFault = 0;
+int pageFaultIndex = 0;
 
+//search function for existing page requests
 int search(int pageRequest, int frames[])
 {
     for (int i = 0; i <= frameNumber; i++)
@@ -23,6 +27,7 @@ int main(int argc, char *argv[])
     if (argc < 2 || argc > 4)
     {
         printf("Invalid argument count\n");
+        printf("Enter in the format: ./a.out input1.txt [FIFO | LRU | OPT]\n");
         return 0;
     }
 
@@ -33,7 +38,7 @@ int main(int argc, char *argv[])
 
     if (input_file == NULL)
     {
-        printf("Error on opening the input file \n");
+        printf("Error opening the input file \n");
         exit(EXIT_FAILURE);
     }
     //grab first three values
@@ -42,7 +47,6 @@ int main(int argc, char *argv[])
 
     while (fscanf(input_file, "%d", &pageRequestArray[counter]) != EOF)
     {
-        printf("Page requests from text file: %d\n", pageRequestArray[counter]);
         counter++;
     }
     fclose(input_file);
@@ -56,11 +60,6 @@ int main(int argc, char *argv[])
 
     if (strcmp(argv[2], "FIFO") == 0)
     {
-
-        int frameIndex = 0;
-        int pageFault = 0;
-        int pageFaultCount = 0;
-
         int i;
         for (i = 0; i < numberofRequests; i++)
         {
@@ -68,7 +67,7 @@ int main(int argc, char *argv[])
             int tobeLoaded = pageRequestArray[i];
 
             //if search does not find the value in question
-            if ((pageFaultCount = search(tobeLoaded, frames)) == -1)
+            if ((pageFaultIndex = search(tobeLoaded, frames)) == -1)
             {
                 pageFault++;
                 //checking for empty frames
@@ -95,9 +94,9 @@ int main(int argc, char *argv[])
                     frameIndex = 0;
                 }
             }
-            else
-            { //page already loaded
-                printf("Page %d already loaded in Frame %d\n", tobeLoaded, pageFaultCount);
+            else // if the page is already loaded
+            {
+                printf("Page %d already loaded in Frame %d\n", tobeLoaded, pageFaultIndex);
             }
         }
         printf("%d Page Faults\n", pageFault);
@@ -105,7 +104,52 @@ int main(int argc, char *argv[])
 
     else if (strcmp(argv[2], "LRU") == 0)
     {
-        printf("LRU");
+        int frameTime[frameNumber];
+        int i;
+        for (i = 0; i < numberofRequests; i++)
+        {
+            int tobeLoaded = pageRequestArray[i];
+
+            if ((pageFaultIndex = search(tobeLoaded, frames)) == -1)
+            {
+                pageFault++; //increment page fault
+                //load empty frames if none exist yet
+                if (frames[frameIndex] == -1)
+                {
+                    printf("Page %d loaded in empty Frame %d\n", tobeLoaded, frameIndex);
+                    frames[frameIndex] = tobeLoaded; //set new page in frame
+                    frameTime[frameIndex] = i;       //set time of frame load
+                    frameIndex++;                    //update frame index
+                    if (frameIndex == frameNumber)
+                        frameIndex = 0;
+
+                    continue;
+                }
+
+                int touse = 0;
+                int touset = 9999;
+                int j;
+                for (j = 0; j < frameNumber; j++)
+                {
+                    if (frameTime[j] < touset)
+                    {
+                        touse = j;
+                        touset = frameTime[j];
+                    }
+                }
+
+                printf("Page %d unloaded from Frame %d", frames[touse], touse);
+                frames[touse] = tobeLoaded; //set new page in frame
+                frameTime[touse] = i;       //set time of frame load
+                printf(", Page %d loaded into Frame %d\n", tobeLoaded, touse);
+            }
+            else
+            {                                  //page already loaded
+                frameTime[pageFaultIndex] = i; //set time of frame access
+                printf("Page %d already loaded in Frame %d\n", tobeLoaded, pageFaultIndex);
+            }
+        }
+        printf("%d Page Faults\n", pageFault);
     }
     else if (strcmp(argv[2], "OPT") == 0)
     {
