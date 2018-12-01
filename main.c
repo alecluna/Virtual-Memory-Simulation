@@ -21,6 +21,18 @@ int search(int pageRequest, int frames[])
     return -1;
 }
 
+int NextPageUse(int cur, int frames[], int f)
+{
+    for (; cur < numberofRequests; cur++)
+    {
+        if (pageRequestArray[cur] == frames[f])
+        {
+            return cur;
+        }
+    }
+    return 9999;
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -126,22 +138,22 @@ int main(int argc, char *argv[])
                     continue;
                 }
 
-                int touse = 0;
-                int touset = 9999;
+                int mostRecent = 0;
+                int toUseTime = 9999;
                 int j;
                 for (j = 0; j < frameNumber; j++)
                 {
-                    if (frameTime[j] < touset)
+                    if (frameTime[j] < toUseTime)
                     {
-                        touse = j;
-                        touset = frameTime[j];
+                        mostRecent = j;
+                        toUseTime = frameTime[j];
                     }
                 }
 
-                printf("Page %d unloaded from Frame %d", frames[touse], touse);
-                frames[touse] = tobeLoaded; //set new page in frame
-                frameTime[touse] = i;       //set time of frame load
-                printf(", Page %d loaded into Frame %d\n", tobeLoaded, touse);
+                printf("Page %d unloaded from Frame %d", frames[mostRecent], mostRecent);
+                frames[mostRecent] = tobeLoaded; //set new page in frame
+                frameTime[mostRecent] = i;       //set time of frame load
+                printf(", Page %d loaded into Frame %d\n", tobeLoaded, mostRecent);
             }
             else
             {                                  //page already loaded
@@ -153,7 +165,51 @@ int main(int argc, char *argv[])
     }
     else if (strcmp(argv[2], "OPT") == 0)
     {
-        printf("OPT");
+        int i;
+        for (i = 0; i < numberofRequests; i++)
+        {
+            int tobeLoaded = pageRequestArray[i];
+
+            if ((pageFaultIndex = search(tobeLoaded, frames)) == -1)
+            {
+
+                pageFault++; //inc page faults
+
+                if (frames[frameIndex] == -1)
+                { //load into empty frames
+                    printf("Page %d loaded in empty Frame %d\n", tobeLoaded, frameIndex);
+                    frames[frameIndex] = tobeLoaded; //set new page in frame
+                    frameIndex++;                    //update frame index
+                    if (frameIndex == frameNumber)
+                    {
+                        frameIndex = 0;
+                    }
+                    continue;
+                }
+
+                int touse = 0;
+                int touset = 0;
+                int f = 0;
+                int t = 0;
+                for (f = 0; f < frameNumber; f++)
+                {
+                    if ((t = NextPageUse(i, frames, f)) > touset)
+                    {
+                        touse = f;
+                        touset = t;
+                    }
+                }
+
+                printf("Page %d unloaded from Frame %d", frames[touse], touse);
+                frames[touse] = tobeLoaded; //set new page in frame
+                printf(", Page %d loaded into Frame %d\n", tobeLoaded, touse);
+            }
+            else
+            { //page already loaded
+                printf("Page %d already loaded in Frame %d\n", tobeLoaded, pageFaultIndex);
+            }
+        }
+        printf("%d Page Faults\n", pageFault);
     }
     else
     {
