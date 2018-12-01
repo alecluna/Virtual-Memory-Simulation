@@ -7,6 +7,16 @@ int pageNumber;
 int frameNumber;
 int numberofRequests;
 
+int search(int pageRequest, int frames[])
+{
+    for (int i = 0; i <= frameNumber; i++)
+    {
+        if (frames[i] == pageRequest)
+            return i;
+    }
+    return -1;
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -37,24 +47,30 @@ int main(int argc, char *argv[])
     }
     fclose(input_file);
 
+    int frames[frameNumber];
+
+    for (int i = 0; i <= frameNumber; i++)
+    {
+        frames[i] = -1;
+    }
+
     if (strcmp(argv[2], "FIFO") == 0)
     {
 
-        int i;
         int frameIndex = 0;
         int pageFault = 0;
         int pageFaultCount = 0;
 
+        int i;
         for (i = 0; i < numberofRequests; i++)
         {
             //build page requests to be looked at
             int tobeLoaded = pageRequestArray[i];
 
-            if ((pageFaultCount = isPageLoaded(tobeLoaded, frames)) == -1)
+            //if search does not find the value in question
+            if ((pageFaultCount = search(tobeLoaded, frames)) == -1)
             {
-
                 pageFault++;
-
                 //checking for empty frames
                 if (frames[frameIndex] == -1)
                 {
@@ -73,7 +89,7 @@ int main(int argc, char *argv[])
                 frames[frameIndex] = tobeLoaded; //set new page in frame
                 printf(", Page %d loaded into Frame %d\n", tobeLoaded, frameIndex);
 
-                ++frameIndex; //update frame index
+                frameIndex++; //update frame index
                 if (frameIndex == frameNumber)
                 {
                     frameIndex = 0;
