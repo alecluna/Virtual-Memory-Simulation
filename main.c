@@ -21,13 +21,14 @@ int search(int pageRequest, int frames[])
     return -1;
 }
 
-int NextPageUse(int cur, int frames[], int f)
+int NextPageUse(int current, int frames[], int f)
 {
-    for (; cur < numberofRequests; cur++)
+    //current already initialized
+    for (; current < numberofRequests; current++)
     {
-        if (pageRequestArray[cur] == frames[f])
+        if (pageRequestArray[current] == frames[f])
         {
-            return cur;
+            return current;
         }
     }
     return 9999;
@@ -121,11 +122,12 @@ int main(int argc, char *argv[])
 
     else if (strcmp(argv[2], "LRU") == 0)
     {
+        //frame time relative to number of frames avaliable
         int frameTime[frameNumber];
-        int i;
-        for (i = 0; i < numberofRequests; i++)
+        int topLevelCount; //top level counter kept for orginzing index
+        for (topLevelCount = 0; topLevelCount < numberofRequests; topLevelCount++)
         {
-            int tobeLoaded = pageRequestArray[i];
+            int tobeLoaded = pageRequestArray[topLevelCount];
 
             if ((pageFaultIndex = search(tobeLoaded, frames)) == -1)
             {
@@ -134,9 +136,9 @@ int main(int argc, char *argv[])
                 if (frames[frameIndex] == -1)
                 {
                     printf("Page %d loaded in empty Frame %d\n", tobeLoaded, frameIndex);
-                    frames[frameIndex] = tobeLoaded; //set new page in frame
-                    frameTime[frameIndex] = i;       //set time of frame load
-                    frameIndex++;                    //update frame index
+                    frames[frameIndex] = tobeLoaded;       //set new page in frame
+                    frameTime[frameIndex] = topLevelCount; //set time of frame load
+                    frameIndex++;                          //update frame index
                     if (frameIndex == frameNumber)
                         frameIndex = 0;
 
@@ -156,13 +158,13 @@ int main(int argc, char *argv[])
                 }
 
                 printf("Page %d unloaded from Frame %d", frames[mostRecent], mostRecent);
-                frames[mostRecent] = tobeLoaded; //set new page in frame
-                frameTime[mostRecent] = i;       //set time of frame load
+                frames[mostRecent] = tobeLoaded;       //set new page in frame
+                frameTime[mostRecent] = topLevelCount; //set time of frame load
                 printf(", Page %d loaded into Frame %d\n", tobeLoaded, mostRecent);
             }
             else
-            {                                  //page already loaded
-                frameTime[pageFaultIndex] = i; //set time of frame access
+            {                                              //page already loaded
+                frameTime[pageFaultIndex] = topLevelCount; //set time of frame access
                 printf("Page %d already loaded in Frame %d\n", tobeLoaded, pageFaultIndex);
             }
         }
@@ -200,6 +202,7 @@ int main(int argc, char *argv[])
                 int t = 0;
                 for (f = 0; f < frameNumber; f++)
                 {
+                    //pass in top level index, array of frames, and counter f
                     if ((t = NextPageUse(i, frames, f)) > touseTime)
                     {
                         tobeUsed = f;
@@ -220,6 +223,6 @@ int main(int argc, char *argv[])
     }
     else
     {
-        printf("error");
-    }
+        printf("Error, entered [FIFO | LRU | OPT ] incorrectly, please use these commands");
+        }
 }
