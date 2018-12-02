@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     {
         printf("Invalid argument count\n");
         printf("Enter in the format: ./a.out input1.txt [FIFO | LRU | OPT]\n");
-        return 0;
+        exit(EXIT_FAILURE);
     }
 
     FILE *input_file;
@@ -55,14 +55,19 @@ int main(int argc, char *argv[])
     }
     //grab first three values
     //&pageNumber, &frameNumber, &numberofAccessRequests
-    fscanf(input_file, "%d %d %d", &pageNumber, &frameNumber, &numberofRequests);
-
-    while (fscanf(input_file, "%d", &pageRequestArray[counter]) != EOF)
+    if (fscanf(input_file, "%d %d %d", &pageNumber, &frameNumber, &numberofRequests) == 3)
     {
-        counter++;
-    }
-    fclose(input_file);
 
+        while (fscanf(input_file, "%d", &pageRequestArray[counter]) != EOF)
+        {
+            counter++;
+        }
+        fclose(input_file);
+    }
+    else
+    {
+        printf("Error, text file must start with 3 integers\n");
+    }
     int frames[frameNumber];
 
     for (int i = 0; i <= frameNumber; i++)
@@ -170,13 +175,15 @@ int main(int argc, char *argv[])
         {
             int tobeLoaded = pageRequestArray[i];
 
+            //search function call
             if ((pageFaultIndex = search(tobeLoaded, frames)) == -1)
             {
 
-                pageFault++; //inc page faults
+                pageFault++;
 
+                //load into empty frames
                 if (frames[frameIndex] == -1)
-                { //load into empty frames
+                {
                     printf("Page %d loaded in empty Frame %d\n", tobeLoaded, frameIndex);
                     frames[frameIndex] = tobeLoaded; //set new page in frame
                     frameIndex++;                    //update frame index
@@ -187,22 +194,22 @@ int main(int argc, char *argv[])
                     continue;
                 }
 
-                int touse = 0;
-                int touset = 0;
+                int tobeUsed = 0;
+                int touseTime = 0;
                 int f = 0;
                 int t = 0;
                 for (f = 0; f < frameNumber; f++)
                 {
-                    if ((t = NextPageUse(i, frames, f)) > touset)
+                    if ((t = NextPageUse(i, frames, f)) > touseTime)
                     {
-                        touse = f;
-                        touset = t;
+                        tobeUsed = f;
+                        touseTime = t;
                     }
                 }
 
-                printf("Page %d unloaded from Frame %d", frames[touse], touse);
-                frames[touse] = tobeLoaded; //set new page in frame
-                printf(", Page %d loaded into Frame %d\n", tobeLoaded, touse);
+                printf("Page %d unloaded from Frame %d", frames[tobeUsed], tobeUsed);
+                frames[tobeUsed] = tobeLoaded; //set new page in frame
+                printf(", Page %d loaded into Frame %d\n", tobeLoaded, tobeUsed);
             }
             else
             { //page already loaded
